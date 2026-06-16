@@ -44,7 +44,7 @@ button {
     transition: transform 0.2s;
 }
 
-.item:hover {
+.item:hover:not(:has(textarea:focus)) {
     transform: scale(1.03);
 }
 
@@ -76,6 +76,15 @@ button {
     align-items: center;
 }
 
+.reason {
+    width: calc(100% - 20px);
+    margin: 10px;
+    min-height: 70px;
+    resize: vertical;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
 .selected .rank {
     display: flex;
 }
@@ -94,6 +103,7 @@ button {
 <div class="grid" id="itemsContainer"></div>
 
 <script>
+const reasons = {};
 
 const items = [
     { name: "酸素ボンベ", image: "images/oxygen.png" },
@@ -115,8 +125,16 @@ const items = [
     { name: "信号弾", image: "images/signal-flare.png" }
 ];
 
-let order = [];
+const reasons =
+    JSON.parse(
+        localStorage.getItem("moonReasons")
+    ) || {};
 
+let order =
+    JSON.parse(
+        localStorage.getItem("moonOrder")
+    ) || [];
+    
 const container = document.getElementById("itemsContainer");
 
 function render() {
@@ -134,14 +152,39 @@ function render() {
         }
 
         div.innerHTML = `
-            <div class="rank">${rank + 1}</div>
+            <div class="rank">
+                ${rank !== -1 ? rank + 1 : ""}
+            </div>
             <img src="${item.image}" alt="${item.name}">
+            <div class="item-name">${item.name}</div>
+            <textarea class="reason" data-index="${index}">${reasons[index] || ""}</textarea>
         `;
-
         div.onclick = () => toggleItem(index);
 
         container.appendChild(div);
     });
+    
+    document.querySelectorAll(".reason").forEach(textarea => {
+    
+        textarea.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+    
+        textarea.addEventListener("input", (e) => {
+    
+            const index = e.target.dataset.index;
+    
+            reasons[index] = e.target.value;
+    
+            localStorage.setItem(
+                "moonReasons",
+                JSON.stringify(reasons)
+            );
+    
+        });
+    
+    });
+    
 }
 
 function toggleItem(index) {
@@ -155,6 +198,11 @@ function toggleItem(index) {
     }
 
     render();
+localStorage.setItem(
+    "moonOrder",
+    JSON.stringify(order)
+);
+    
 }
 
 function undo() {
@@ -164,11 +212,28 @@ function undo() {
     }
 
     render();
+    
+localStorage.setItem(
+    "moonOrder",
+    JSON.stringify(order)
+);    
 }
 
 function resetRanking() {
 
+    if (!confirm("順位と理由をすべて削除しますか？")) {
+        return;
+    }
+
     order = [];
+
+    Object.keys(reasons).forEach(key => {
+        delete reasons[key];
+    });
+
+    localStorage.removeItem("moonOrder");
+    localStorage.removeItem("moonReasons");
+
     render();
 }
 
