@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="images/favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Survival on the Moon</title>
 
@@ -103,7 +104,6 @@ button {
 <div class="grid" id="itemsContainer"></div>
 
 <script>
-const reasons = {};
 
 const items = [
     { name: "酸素ボンベ", image: "images/oxygen.png" },
@@ -169,7 +169,11 @@ function render() {
         textarea.addEventListener("click", (e) => {
             e.stopPropagation();
         });
-    
+        
+        textarea.addEventListener("mousedown", e => {
+            e.stopPropagation();
+        }); 
+   
         textarea.addEventListener("input", (e) => {
     
             const index = e.target.dataset.index;
@@ -197,11 +201,11 @@ function toggleItem(index) {
         order.push(index);
     }
 
-    render();
 localStorage.setItem(
     "moonOrder",
     JSON.stringify(order)
 );
+    render();
     
 }
 
@@ -211,12 +215,12 @@ function undo() {
         order.pop();
     }
 
-    render();
     
 localStorage.setItem(
     "moonOrder",
     JSON.stringify(order)
 );    
+    render();
 }
 
 function resetRanking() {
