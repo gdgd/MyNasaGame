@@ -44,7 +44,56 @@ button {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.2s;
 }
+.compact-mode .item {
 
+    padding: 5px;
+
+}
+
+.compact-mode .item img {
+
+    width: 100%;
+    height: 80px;
+
+    object-fit: contain;
+}
+
+.compact-mode .item-name {
+
+    display: none;
+}
+
+.compact-mode .reason {
+
+    display: none;
+}
+
+.compact-mode .grid {
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(90px, 1fr));
+}
+
+.detail-layout {
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.detail-layout img {
+
+    width: 80px;
+    height: 80px;
+
+    object-fit: contain;
+}
+
+.detail-layout textarea {
+
+    flex: 1;
+    min-height: 80px;
+}
 
 .item img {
     width: 100%;
@@ -188,7 +237,7 @@ details li {
 	<div id="rankingPanel" class="ranking-panel"></div>
     <button onclick="undo()">1つ戻す</button>
     <button onclick="resetRanking()">リセット</button>    
-    <button onclick="toggleReasons()">理由欄 ON/OFF</button>
+    <button onclick="toggleViewMode()">一覧</button>
 </div>
 <div class="grid" id="itemsContainer"></div>
 
@@ -227,6 +276,17 @@ let order =
 const container = document.getElementById("itemsContainer");
 
 function render() {
+
+if(compactMode){
+
+    container.classList.add("compact-mode");
+
+}else{
+
+    container.classList.remove("compact-mode");
+
+}
+
     container.innerHTML = "";
 
     items.forEach((item, index) => {
@@ -239,15 +299,31 @@ function render() {
         if (rank !== -1) {
             div.classList.add("selected");
         }
-
-        div.innerHTML = `
-            <div class="rank">
-                ${rank !== -1 ? rank + 1 : ""}
-            </div>
+        
+if(compactMode){
+    div.innerHTML = `
+        <div class="rank">
+            ${rank !== -1 ? rank + 1 : ""}
+        </div>
+        <img src="${item.image}" alt="${item.name}">
+    `;
+}else{
+    div.innerHTML = `
+        <div class="rank">
+            ${rank !== -1 ? rank + 1 : ""}
+        </div>
+        <div class="detail-layout">
             <img src="${item.image}" alt="${item.name}">
-            <div class="item-name">${index + 1}. ${item.name}</div>
-            ${showReasons ? `<textarea class="reason" data-index="${index}">${reasons[index] || ""}</textarea>` : ""}
-        `;
+            <textarea
+                class="reason"
+                data-index="${index}"
+            >${reasons[index] || ""}</textarea>
+        </div>
+        <div class="item-name">
+            ${index + 1}. ${item.name}
+        </div>
+    `;
+}
         div.onclick = () => toggleItem(index);
 
         container.appendChild(div);
@@ -344,6 +420,15 @@ function toggleReasons() {
     );
     render();
 }
+let compactMode = false;
+
+function toggleViewMode() {
+
+    compactMode = !compactMode;
+
+    render();
+}
+
 function updateRankingPanel() {
 
     const panel =
@@ -357,20 +442,7 @@ function updateRankingPanel() {
         return;
     }
 
-    let html =
-        `<b>現在の選択 ${order.length}/15</b><ol>`;
-
-    order.forEach(index => {
-
-        html += `
-            <li>
-                ${items[index].name}
-            </li>
-        `;
-    });
-
-    html += "</ol>";
-
+    let html =`<b>現在の選択 ${order.length}/15</b><ol>`;
     panel.innerHTML = html;
 }
 
