@@ -39,7 +39,7 @@ button {
     position: relative;
     background: white;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.2s;
@@ -345,19 +345,20 @@ function toggleReasons() {
     render();
 }
 function updateRankingPanel() {
-    let html =`<b>現在の選択 ${order.length}/15</b><ol>`;
+
     const panel =
         document.getElementById("rankingPanel");
 
     if(order.length === 0){
 
         panel.innerHTML =
-            "<b>順位一覧</b><br>未選択";
+            "<b>現在の選択 0/15</b><br>未選択";
 
         return;
     }
 
-    let html = "<b>順位一覧</b><ol>";
+    let html =
+        `<b>現在の選択 ${order.length}/15</b><ol>`;
 
     order.forEach(index => {
 
