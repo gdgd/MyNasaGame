@@ -31,30 +31,39 @@ button {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 15px;
+}
+
+/* 通常モード */
+.grid.normal-mode {
+    grid-template-columns: 1fr;
+}
+
+/* 一覧モード */
+.grid.compact-mode {
+    grid-template-columns:
+        repeat(auto-fill, minmax(90px, 1fr));
 }
 
 .item {
     position: relative;
     background: white;
     border-radius: 10px;
-    overflow: visible;
-    cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
-}
-.compact-mode .item {
-
-    padding: 5px;
-
+    overflow: hidden;
 }
 
+/* 通常モード画像 */
+.item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* 一覧モード画像 */
 .compact-mode .item img {
-
     width: 100%;
     height: 80px;
-
     object-fit: contain;
 }
 
@@ -75,11 +84,17 @@ button {
 }
 
 .detail-layout {
-
     display: flex;
-    align-items: flex-start;
     gap: 10px;
+    align-items: flex-start;
+    padding: 10px;
 }
+
+.detail-layout textarea {
+    flex: 1;
+    min-height: 80px;
+}
+
 
 .detail-layout img {
 
@@ -89,11 +104,6 @@ button {
     object-fit: contain;
 }
 
-.detail-layout textarea {
-
-    flex: 1;
-    min-height: 80px;
-}
 
 .item img {
     width: 100%;
@@ -278,15 +288,10 @@ const container = document.getElementById("itemsContainer");
 function render() {
 
 if(compactMode){
-
-    container.classList.add("compact-mode");
-
+    container.className = "grid compact-mode";
 }else{
-
-    container.classList.remove("compact-mode");
-
+    container.className = "grid normal-mode";
 }
-
     container.innerHTML = "";
 
     items.forEach((item, index) => {
@@ -307,18 +312,25 @@ if(compactMode){
         </div>
         <img src="${item.image}" alt="${item.name}">
     `;
-}else{
+else{
+
     div.innerHTML = `
         <div class="rank">
             ${rank !== -1 ? rank + 1 : ""}
         </div>
+
         <div class="detail-layout">
+
             <img src="${item.image}" alt="${item.name}">
+
             <textarea
                 class="reason"
                 data-index="${index}"
+                placeholder="理由を入力"
             >${reasons[index] || ""}</textarea>
+
         </div>
+
         <div class="item-name">
             ${index + 1}. ${item.name}
         </div>
@@ -420,11 +432,19 @@ function toggleReasons() {
     );
     render();
 }
-let compactMode = false;
+let compactMode =
+    JSON.parse(
+        localStorage.getItem("compactMode")
+    ) || false;
 
 function toggleViewMode() {
 
     compactMode = !compactMode;
+
+    localStorage.setItem(
+        "compactMode",
+        JSON.stringify(compactMode)
+    );
 
     render();
 }
@@ -434,16 +454,8 @@ function updateRankingPanel() {
     const panel =
         document.getElementById("rankingPanel");
 
-    if(order.length === 0){
-
-        panel.innerHTML =
-            "<b>現在の選択 0/15</b><br>未選択";
-
-        return;
-    }
-
-    let html =`<b>現在の選択 ${order.length}/15</b><ol>`;
-    panel.innerHTML = html;
+    panel.innerHTML =
+        `<b>現在の選択 ${order.length}/15</b>`;
 }
 
 render();
