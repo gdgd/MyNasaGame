@@ -45,9 +45,6 @@ button {
     transition: transform 0.2s;
 }
 
-.item:hover:not(:has(textarea:focus)) {
-    transform: scale(1.03);
-}
 
 .item img {
     width: 100%;
@@ -75,6 +72,18 @@ button {
     display: none;
     justify-content: center;
     align-items: center;
+}
+.ranking-panel {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    max-height: 120px;
+    overflow-y: auto;
 }
 
 .reason {
@@ -117,6 +126,12 @@ details p,
 details li {
     line-height: 1.8;
 }
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 </head>
 
@@ -127,7 +142,7 @@ details li {
 
 <div class="info-container">
 
-    <details open>
+    <details>
         <summary>📖 ストーリー</summary>
 
         <p>あなたは宇宙船に乗って月面に着陸しようとしている宇宙飛行士です。
@@ -170,10 +185,11 @@ details li {
 </div>
 
 <div class="controls">
+	<div id="rankingPanel" class="ranking-panel"></div>
     <button onclick="undo()">1つ戻す</button>
-    <button onclick="resetRanking()">リセット</button>
+    <button onclick="resetRanking()">リセット</button>    
+    <button onclick="toggleReasons()">理由欄 ON/OFF</button>
 </div>
-
 <div class="grid" id="itemsContainer"></div>
 
 <script>
@@ -187,12 +203,12 @@ const items = [
 
     { name: "通信機", image: "images/radio.png" },
     { name: "パラシュート", image: "images/parachute.png" },
-    { name: "ライフラフト", image: "images/life-raft.png" },
+    { name: "救命ボート", image: "images/life-raft.png" },
     { name: "拳銃", image: "images/pistol.png" },
     { name: "マッチ", image: "images/matches.png" },
 
     { name: "ロープ", image: "images/rope.png" },
-    { name: "ミルク", image: "images/milk.png" },
+    { name: "粉ミルク", image: "images/milk.png" },
     { name: "携帯暖房器", image: "images/heater.png" },
     { name: "コンパス", image: "images/compass.png" },
     { name: "信号弾", image: "images/signal-flare.png" }
@@ -229,7 +245,8 @@ function render() {
                 ${rank !== -1 ? rank + 1 : ""}
             </div>
             <img src="${item.image}" alt="${item.name}">
-            <textarea class="reason" data-index="${index}">${reasons[index] || ""}</textarea>
+            <div class="item-name">${index + 1}. ${item.name}</div>
+            ${showReasons ? `<textarea class="reason" data-index="${index}">${reasons[index] || ""}</textarea>` : ""}
         `;
         div.onclick = () => toggleItem(index);
 
@@ -260,7 +277,7 @@ function render() {
         });
     
     });
-    
+    updateRankingPanel();
 }
 
 function toggleItem(index) {
@@ -311,6 +328,49 @@ function resetRanking() {
     localStorage.removeItem("moonReasons");
 
     render();
+}
+
+let showReasons =
+    JSON.parse(
+        localStorage.getItem("showReasons")
+    ) || false;
+
+function toggleReasons() {
+
+    showReasons = !showReasons;
+    localStorage.setItem(
+        "showReasons",
+        JSON.stringify(showReasons)
+    );
+    render();
+}
+function updateRankingPanel() {
+    let html =`<b>現在の選択 ${order.length}/15</b><ol>`;
+    const panel =
+        document.getElementById("rankingPanel");
+
+    if(order.length === 0){
+
+        panel.innerHTML =
+            "<b>順位一覧</b><br>未選択";
+
+        return;
+    }
+
+    let html = "<b>順位一覧</b><ol>";
+
+    order.forEach(index => {
+
+        html += `
+            <li>
+                ${items[index].name}
+            </li>
+        `;
+    });
+
+    html += "</ol>";
+
+    panel.innerHTML = html;
 }
 
 render();
